@@ -1,0 +1,45 @@
+{
+  "name": "rznu",
+  "version": "1.0.0",
+  "description": "Two Project, REST API and WebSocket, for the Component and Service Oriented Information Systems course held at the University of Zagreb, Faculty of Electrical Engineering and Computing.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rokosbuca/Faculty-of-Electrical-Engineering-and-Computing---Component-and-Service-Oriented-Information-Systems.git"
+  },
+  "keywords": [
+    "REST",
+    "API",
+    "WebSocket",
+    "Redis",
+    "Mongoose",
+    "Authentication",
+    "Postman",
+    "Express",
+    "Routing",
+    "HTML",
+    "Mocha",
+    "Chai"
+  ],
+  "author": "Roko S. Buča",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rokosbuca/Faculty-of-Electrical-Engineering-and-Computing---Component-and-Service-Oriented-Information-Systems/issues"
+  },
+  "homepage": "https://github.com/rokosbuca/Faculty-of-Electrical-Engineering-and-Computing---Component-and-Service-Oriented-Information-Systems#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "config": "^3.0.0",
+    "express": "^4.16.4",
+    "mongoose": "^5.3.14",
+    "morgan": "^1.9.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
