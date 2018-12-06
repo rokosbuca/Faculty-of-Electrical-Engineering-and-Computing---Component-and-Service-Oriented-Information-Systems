@@ -65,11 +65,23 @@ function createPassword(plainTextPassword, salt) {
     return hashedPassword;
 }
 
+function randomStatus() {
+    var status = '';
+    var charset = '    abcdefghijklmnopqrstuvwxyz';
+  
+    status = 'status ';
+    for (let i = 0; i < 50; i++)
+        status += charset.charAt(Math.floor(Math.random() * charset.length));
+  
+    return status;
+}
+
 module.exports = {
     randomId,
     randomEmail,
     randomString,
     randomName,
     randomSalt,
-    createPassword
+    createPassword,
+    randomStatus
 }
