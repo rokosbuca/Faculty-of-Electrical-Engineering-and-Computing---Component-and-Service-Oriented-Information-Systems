@@ -1,6 +1,8 @@
+const config = require('./config');
+
 // connect to mongodb
 const mongoose   = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1:27017');
+mongoose.connect(config.database);
 
 // setting up express server
 const express = require('express');
@@ -8,10 +10,11 @@ const bodyParser = require('body-parser');
 
 // create and setup express app
 const app = express();
+app.set('restSecret', config.secret);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || config.PORT;
 
 // initialize rest api controller
 const restApiController = require('./api/routes')(app, '/api');
