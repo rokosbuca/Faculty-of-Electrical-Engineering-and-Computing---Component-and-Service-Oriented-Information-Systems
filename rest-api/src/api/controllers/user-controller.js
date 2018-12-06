@@ -18,7 +18,13 @@ const Salt = require('../../../database/models/salt');
 const utils = require('../utils');
 
 router.get(mapping, (req, res) => {
-    User.findOne({ userId: req.params.userId}, (err, user) => {
+    if (!req.params.userId) {
+        res.status(400).send('Malformed request. Please provide userId.');
+    }
+
+    const userId = req.params.userId;
+
+    User.findOne({ userId: userId }, (err, user) => {
         if (err) {
             res.status(500).send('Error while fetching user');
         }
@@ -27,39 +33,6 @@ router.get(mapping, (req, res) => {
     });
 });
 
-/*
-router.post(mapping, (req, res) => {
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
-
-    // first create salt for this user
-    const salt = new Salt();
-    salt.saltId = utils.randomId();
-    salt.salt = utils.randomSalt();
-    
-    salt.save((err) => {
-        if (err) {
-            res.status(500).send('Unexpected error while saving salt to database.');
-        }
-        const user = new User();
-        user.userId = req.params.userId;//utils.randomId();
-        user.username = username;
-        user.email = email;
-        user.password = utils.createPassword(password, salt.salt);
-        user.saltId = salt.saltId;
-
-        user.save((err) => {
-            if (err) {
-                res.status(500).send('Unexpected error while saving user to database.');
-            }
-
-        });
-
-        res.json({ message: 'User saved successfully', user: user });
-    });
-});
-*/
 
 router.put(mapping, (req, res) => {
     /**
@@ -68,6 +41,9 @@ router.put(mapping, (req, res) => {
      * email
      * password
      */
+    if (!req.params.userId) {
+        res.status(400).send('Malformed request. Please provide userId.');
+    }
     if (!req.body.username) {
         res.status(400).send('Malformed request. Please provide new username.');
     }
@@ -114,10 +90,11 @@ router.put(mapping, (req, res) => {
 });
 
 router.delete(mapping, (req, res) => {
-    const userId = req.params.userId;
-    if (!userId) {
+    if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId.');
     }
+
+    const userId = req.params.userId;
 
     User.remove({
         userId: userId
@@ -129,8 +106,6 @@ router.delete(mapping, (req, res) => {
         res.json({ message: 'Successfully deleted', user: user });
     });
 });
-
-// /api/users
 
 module.exports = {
     router
