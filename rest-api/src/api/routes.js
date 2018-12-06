@@ -19,5 +19,4 @@ module.exports = (app, path) => {
     app.use(path, userController.router);
     app.use(path, userStatusController.router);
     app.use(path, statusController.router);
-    app.use(path, apiKeyController.router);
 }
