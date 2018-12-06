@@ -5,7 +5,7 @@
 
 // router
 const router = require('express').Router();
-const mapping = '/users/:userId';
+const mapping = '/users/:userId/statuses';
 
 // middlewares
 const security = require('../security');
