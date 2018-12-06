@@ -18,7 +18,13 @@ const Status = require('../../../database/models/status');
 const utils = require('../utils');
 
 router.get(mapping, (req, res) => {
-    Status.findOne({ statusId: req.params.statusId}, (err, status) => {
+    if (!req.params.statusId) {
+        res.status(400).send('Malformed request. Please provide statusId.');
+    }
+
+    const statusId = req.params.statusId;
+
+    Status.findOne({ statusId: statusId }, (err, status) => {
         if (err) {
             res.status(500).send('Unexpected error occured while fetching statuses.');
         }
@@ -35,6 +41,9 @@ router.post(mapping, (req, res) => {
      * userId
      */
 
+    if (!req.body.statusId) {
+        req.status(400).send('Malformed request. Please provide statusId.');
+    }
     if (!req.body.userId) {
         req.status(400).send('Malformed request. Please provide userId this status should be added to.');
     }
