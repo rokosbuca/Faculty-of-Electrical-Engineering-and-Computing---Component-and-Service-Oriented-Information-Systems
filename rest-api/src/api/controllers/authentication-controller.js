@@ -25,10 +25,10 @@ router.get(mapping, (req, res) => {
 });
 
 router.post(mapping, (req, res) => {
-    if (req.body.username) {
+    if (!req.body.username) {
         res.status(400).send('Malformed request. Please provide username.');
     }
-    if (req.body.password) {
+    if (!req.body.password) {
         res.status(400).send('Malformed request. Please provide password.');
     }
 
