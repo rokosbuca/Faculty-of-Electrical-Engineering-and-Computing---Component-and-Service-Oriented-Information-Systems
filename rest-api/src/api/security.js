@@ -15,6 +15,9 @@ const redisClient = redis.createClient();
 const RateLimit = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
 
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+
 const decodeApiKey = (apiKey) => {
     // TODO
     return null;
@@ -22,7 +25,22 @@ const decodeApiKey = (apiKey) => {
 
 const authenticationMiddleware = (req, res, next) => {
     console.log('accessing security.authenticationMiddleware middleware');
-    next();
+
+    if (!req.body.token) {
+        res.status(400).send('Malformed request. Please provide token with this request and try again.');
+    }
+
+    const token = req.body.token;
+
+    jwt.verify(token, config.secret, (err, decodedToken) => {
+        if (err) {
+            res.status(401).send('Unaothrized. Token authentication failed.');
+        }
+
+        // save token to req for later use
+        req.decodedToken = decodedToken;
+        next();
+    });
 };
 
 

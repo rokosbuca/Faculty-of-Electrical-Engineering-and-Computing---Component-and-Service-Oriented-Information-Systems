@@ -9,6 +9,8 @@ const authenticationController = require('./controllers/authentication-controlle
 const security = require('./security');
 
 module.exports = (app, path) => {
+    // enable api frequency access limiter middleware which is triggered with the senders IP
+    app.enable('trust proxy'); // only useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     app.use(path, security.accessFrequencyLimiterMiddlewareByIP);
 
     // ping user back when /api is requested
