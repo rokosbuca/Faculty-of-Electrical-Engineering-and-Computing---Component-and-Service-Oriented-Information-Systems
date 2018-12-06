@@ -3,6 +3,7 @@ const usersController = require('./controllers/users-controller');
 const userController = require('./controllers/user-controller');
 const userStatusController = require('./controllers/user-status-controller');
 const statusController = require('./controllers/status-controller');
+const statusesController = require('./controllers/statuses-controller');
 const authenticationController = require('./controllers/authentication-controller');
 
 // middlewares
@@ -22,4 +23,5 @@ module.exports = (app, path) => {
     app.use(path, userController.router);
     app.use(path, userStatusController.router);
     app.use(path, statusController.router);
+    app.use(path, statusesController.router);
 }
