@@ -70,5 +70,6 @@ module.exports = {
     randomEmail,
     randomString,
     randomName,
-    randomSalt
+    randomSalt,
+    createPassword
 }
