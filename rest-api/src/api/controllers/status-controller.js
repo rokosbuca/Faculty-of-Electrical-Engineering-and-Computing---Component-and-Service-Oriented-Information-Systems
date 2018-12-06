@@ -20,6 +20,7 @@ const utils = require('../utils');
 router.get(mapping, (req, res) => {
     if (!req.params.statusId) {
         res.status(400).send('Malformed request. Please provide statusId.');
+        return;
     }
 
     const statusId = req.params.statusId;
@@ -27,9 +28,16 @@ router.get(mapping, (req, res) => {
     Status.findOne({ statusId: statusId }, (err, status) => {
         if (err) {
             res.status(500).send('Unexpected error occured while fetching statuses.');
+            return;
+        }
+
+        if (!status) {
+            res.status(400).send('Malformed request. Provided statusId doesn\'t exist in the database.');
+            return;
         }
 
         res.json({ status: status });
+        return;
     });
 });
 

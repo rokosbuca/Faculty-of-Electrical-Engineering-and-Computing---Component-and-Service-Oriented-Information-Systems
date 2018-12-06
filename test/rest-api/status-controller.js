@@ -19,138 +19,52 @@ const Status = require('../../rest-api/database/models/status');
 
 // utils
 const utils = require('../../rest-api/src/api/utils');
+const jwt = require('jsonwebtoken');
+const config = require('../../rest-api/src/config');
 
 // config chai library
 chai.use(chaiHttp);
 
-/*
-// router
-const router = require('express').Router();
-const mapping = '/statuses/:statusId';
-
-// middlewares
-const security = require('../security');
-
-// schemas
-const User = require('../../../database/models/user');
-const Status = require('../../../database/models/status');
-
-// utils
-const utils = require('../utils');
-
-router.get(mapping, (req, res) => {
-    if (!req.params.statusId) {
-        res.status(400).send('Malformed request. Please provide statusId.');
-    }
-
-    const statusId = req.params.statusId;
-
-    Status.findOne({ statusId: statusId }, (err, status) => {
-        if (err) {
-            res.status(500).send('Unexpected error occured while fetching statuses.');
-        }
-
-        res.json({ status: status });
+describe('STATUS CONTROLLER', () => {
+    beforeEach((done) => {
+        // before each test empty the database
+        User.remove({}, () => {
+            Salt.remove({}, () => {
+                Status.remove({}, () => {
+                    done();
+                });
+            });
+        });
     });
-});
+    /** test GET /api/statuses/:statusId */
+    describe('GET /api/statuses/:statusId', () => {
+        it ('it should fail when the provided :statusId doesn\'t exist in the database', (done) => {
+            chai.request(server)
+                .get('/api/statuses/xxx')
+                .end((err, res) => {
+                    res.should.have.status(400);
 
-router.post(mapping, (req, res) => {
+                    done();
+                });
+        });
+        it ('it should return the correct status\' text', (done) => {
+            const status = new Status();
+            status.statusId = utils.randomId();
+            status.text = utils.randomStatus();
+            status.userId = utils.randomId();
+            status.save(() => {
+                chai.request(server)
+                    .get('/api/statuses/' + status.statusId)
+                    .end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.status.text.should.be.a('string');
+                        res.body.status.statusId.should.be.eql(status.statusId);
+                        res.body.status.text.should.be.eql(status.text);
+                        res.body.status.userId.should.be.eql(status.userId);
 
-    if (!req.body.statusId) {
-        req.status(400).send('Malformed request. Please provide statusId.');
-    }
-    if (!req.body.userId) {
-        req.status(400).send('Malformed request. Please provide userId this status should be added to.');
-    }
-    if (!req.body.text) {
-        req.status(400).send('Malformed request. Please provide text for this status.');
-    }
-
-    const statusId = req.params.statusId;
-    const userId = String(req.body.userId);
-    const text = String(req.body.text);
-
-    // first find if user with given userId exists
-    User.find((err, users) => {
-        if (err) {
-            res.status(500).send('Unexpected error while checking if the userId given is valid.');
-        }
-
-        let userFound = false;
-        let ui = -1;
-        for (let i in users) {
-            if (users[i].userId === userId) {
-                userFound = true;
-                ui = i;
-            }
-        }
-
-        if (!userFound) {
-            res.status(400).send('Please provide existing userId.');
-        }
-
-        const status = new Status();
-        status.statusId = statusId;
-        status.text = text;
-        status.userId = userId;
-
-        status.save((err) => {
-            if (err) {
-                res.status(500).send('Unexpected error while saving new status.');
-            }
-
-            res.json({ message: 'Status saved successfully.', status: status });
+                        done();
+                    });
+            });
         });
     });
 });
-
-router.put(mapping, (req, res) => {
-    if (!req.params.statusId) {
-        req.status(400).send('Malformed request. Please provide statusId');
-    }
-    if (!req.body.userId) {
-        req.status(400).send('Malformed request. Please provide userId this status should be added to.');
-    }
-    if (!req.body.text) {
-        req.status(400).send('Malformed request. Please provide text for this status.');
-    }
-
-    const statusId = String(req.params.statusId);
-    const userId = String(req.body.userId);
-    const text = String(req.body.text);
-
-    Status.update({
-        statusId: statusId
-        }, {
-            text: text,
-        }, (err, user) => {
-            if (err) {
-                res.status(500).send('Unexpected server error while updating status text.');
-            }
-
-            res.json({ message: 'Status successfully updated.', user: user });
-    });
-});
-
-router.delete(mapping, (req, res) => {
-    if (!req.params.statusId) {
-        req.status(400).send('Malformed request. Please provide statusId');
-    }
-
-    const statusId = String(req.params.statusId);
-
-    Status.remove({
-        statusId: statusId
-    }, function(err, status) {
-        if (err) {
-            res.status(500).send(err);
-        }
-
-        res.json({ message: 'Successfully deleted', status: status });
-    });
-});
-
-module.exports = {
-    router
-};
-*/
