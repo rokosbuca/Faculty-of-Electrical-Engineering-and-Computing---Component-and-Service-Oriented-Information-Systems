@@ -5,7 +5,7 @@
 
 // router
 const router = require('express').Router();
-const mapping = '/statuses/:statusId';
+const mapping = '/statuses';
 
 // middlewares
 const security = require('../security');
@@ -17,20 +17,39 @@ const Status = require('../../../database/models/status');
 // utils
 const utils = require('../utils');
 
+router.post(mapping + '/rnd', (req, res) => {
+    const userId = req.body.userId;
+    const statusId = utils.randomId();
+    const text = utils.randomStatus();
+
+    const status = new Status();
+    status.statusId = statusId;
+    status.text = text;
+    status.userId = userId;
+    
+    status.save((err) => {
+        if (err) {
+            res.status(500).send(err);
+        }
+
+        res.json({ message: 'Random status generated successfully.', status: status });
+    });
+});
+
 router.get(mapping, (req, res) => {
-    Status.findOne({ statusId: req.params.statusId}, (err, status) => {
+    Status.find((err, statuses) => {
         if (err) {
             res.status(500).send('Unexpected error occured while fetching statuses.');
         }
 
-        res.json({ status: status });
+        res.json({ statuses: statuses });
     });
 });
 
 router.post(mapping, (req, res) => {
     /**
      * Status
-     * statusId
+     * statusId -> generated automatically
      * text
      * userId
      */
@@ -42,7 +61,7 @@ router.post(mapping, (req, res) => {
         req.status(400).send('Malformed request. Please provide text for this status.');
     }
 
-    const statusId = req.params.statusId;
+    const statusId = utils.randomId();
     const userId = String(req.body.userId);
     const text = String(req.body.text);
 
@@ -81,7 +100,7 @@ router.post(mapping, (req, res) => {
 });
 
 router.put(mapping, (req, res) => {
-    if (!req.params.statusId) {
+    if (!req.body.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
     }
     if (!req.body.userId) {
@@ -91,7 +110,7 @@ router.put(mapping, (req, res) => {
         req.status(400).send('Malformed request. Please provide text for this status.');
     }
 
-    const statusId = String(req.params.statusId);
+    const statusId = String(req.body.statusId);
     const userId = String(req.body.userId);
     const text = String(req.body.text);
 
@@ -109,11 +128,11 @@ router.put(mapping, (req, res) => {
 });
 
 router.delete(mapping, (req, res) => {
-    if (!req.params.statusId) {
+    if (!req.body.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
     }
 
-    const statusId = String(req.params.statusId);
+    const statusId = String(req.body.statusId);
 
     Status.remove({
         statusId: statusId
