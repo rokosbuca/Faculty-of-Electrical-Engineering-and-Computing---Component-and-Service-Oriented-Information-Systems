@@ -18,15 +18,16 @@ const Salt = require('../../../database/models/salt');
 const utils = require('../utils');
 
 router.get(mapping, (req, res) => {
-    User.find((err, users) => {
+    User.findOne({ userId: req.params.userId}, (err, user) => {
         if (err) {
-            res.status(500).send('Error while fetching users');
+            res.status(500).send('Error while fetching user');
         }
 
-        res.json({ users: users });
+        res.json({ user: user });
     });
 });
 
+/*
 router.post(mapping, (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
@@ -42,7 +43,7 @@ router.post(mapping, (req, res) => {
             res.status(500).send('Unexpected error while saving salt to database.');
         }
         const user = new User();
-        user.userId = utils.randomId();
+        user.userId = req.params.userId;//utils.randomId();
         user.username = username;
         user.email = email;
         user.password = utils.createPassword(password, salt.salt);
@@ -58,6 +59,7 @@ router.post(mapping, (req, res) => {
         res.json({ message: 'User saved successfully', user: user });
     });
 });
+*/
 
 router.put(mapping, (req, res) => {
     /**
@@ -66,9 +68,6 @@ router.put(mapping, (req, res) => {
      * email
      * password
      */
-    if (!req.body.userId) {
-        res.status(400).send('Malformed request. Please provide userId.');
-    }
     if (!req.body.username) {
         res.status(400).send('Malformed request. Please provide new username.');
     }
@@ -79,7 +78,7 @@ router.put(mapping, (req, res) => {
         res.status(400).send('Malformed request. Please provide new password.');
     }
 
-    const userId = req.body.userId;
+    const userId = String(req.params.userId);
     const username = String(req.body.username);
     const email = String(req.body.email);
     const password = String(req.body.password);
@@ -115,7 +114,7 @@ router.put(mapping, (req, res) => {
 });
 
 router.delete(mapping, (req, res) => {
-    const userId = req.body.userId;
+    const userId = req.params.userId;
     if (!userId) {
         res.status(400).send('Malformed request. Please provide userId.');
     }
