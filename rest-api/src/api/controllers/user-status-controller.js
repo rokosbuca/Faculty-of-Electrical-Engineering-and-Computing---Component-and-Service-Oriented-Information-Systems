@@ -63,7 +63,10 @@ router.get(mapping, (req, res) => {
     });
 });
 
-router.post(mapping, (req, res) => {
+router.post(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     /**
      * Status
      * statusId -> generated automatically
@@ -116,7 +119,10 @@ router.post(mapping, (req, res) => {
     });
 });
 
-router.put(mapping, (req, res) => {
+router.put(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     if (!req.body.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
     }
@@ -145,7 +151,10 @@ router.put(mapping, (req, res) => {
     );
 });
 
-router.delete(mapping, (req, res) => {
+router.delete(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     if (!req.body.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
     }

@@ -17,7 +17,10 @@ const Salt = require('../../../database/models/salt');
 // utils
 const utils = require('../utils');
 
-router.get(mapping, (req, res) => {
+router.get(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId.');
     }
@@ -34,7 +37,10 @@ router.get(mapping, (req, res) => {
 });
 
 
-router.put(mapping, (req, res) => {
+router.put(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     /**
      * User..
      * username
@@ -89,7 +95,10 @@ router.put(mapping, (req, res) => {
 
 });
 
-router.delete(mapping, (req, res) => {
+router.delete(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId.');
     }

@@ -62,7 +62,7 @@ const accessFrequencyLimiterMiddlewareByIP = new RateLimit({
     keyGenerator: (req) => req.ip
 });
 
-const accessFrequencyLimiterMiddlewareByapiKey = new RateLimit({
+const accessFrequencyLimiterMiddlewareByToken = new RateLimit({
     store: new RedisStore({
         expiry: 60,     // 60 sec
         resetExpiryOnChange: false,
@@ -79,5 +79,5 @@ module.exports = {
     authenticationMiddleware,
     accessPermissionMiddleware,
     accessFrequencyLimiterMiddlewareByIP,
-    accessFrequencyLimiterMiddlewareByapiKey
+    accessFrequencyLimiterMiddlewareByToken
 }
