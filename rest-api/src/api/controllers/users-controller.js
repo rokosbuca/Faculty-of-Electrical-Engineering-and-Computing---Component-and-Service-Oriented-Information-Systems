@@ -20,7 +20,7 @@ const utils = require('../utils');
 router.get(mapping, (req, res) => {
     User.find((err, users) => {
         if (err) {
-            res.status(500).send('Error while fetching users');
+            res.status(500).send('Error while fetching users.');
         }
 
         res.json({ users: users });

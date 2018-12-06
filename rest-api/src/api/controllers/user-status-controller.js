@@ -18,6 +18,10 @@ const Status = require('../../../database/models/status');
 const utils = require('../utils');
 
 router.post(mapping + '/rnd', (req, res) => {
+    if (!req.params.userId) {
+        res.status(400).send('Malformed request. Please provide userId');
+    }
+
     const userId = req.params.userId;
     const statusId = utils.randomId();
     const text = utils.randomStatus();
@@ -37,12 +41,25 @@ router.post(mapping + '/rnd', (req, res) => {
 });
 
 router.get(mapping, (req, res) => {
+    if (!req.params.userId) {
+        res.status(400).send('Malformed request. Please provide userId');
+    }
+
+    const userId = req.params.userId;
+
     Status.find((err, statuses) => {
         if (err) {
             res.status(500).send('Unexpected error occured while fetching statuses.');
         }
 
-        res.json({ statuses: statuses });
+        const userStatuses = [];
+        for (let i in statuses) {
+            if (statuses[i].userId === userId) {
+                userStatuses.push(statuses[i]);
+            }
+        }
+
+        res.json({ statuses: userStatuses });
     });
 });
 
@@ -124,7 +141,8 @@ router.put(mapping, (req, res) => {
             }
 
             res.json({ message: 'Status successfully updated.', user: user });
-    });
+        }
+    );
 });
 
 router.delete(mapping, (req, res) => {
