@@ -23,6 +23,7 @@ const utils = require('../../rest-api/src/api/utils');
 // config chai library
 chai.use(chaiHttp);
 
+/*
 // router
 const router = require('express').Router();
 const mapping = '/users/:userId/statuses';
@@ -87,12 +88,6 @@ router.post(mapping,
     security.authenticationMiddleware,
     security.accessFrequencyLimiterMiddlewareByToken,
     (req, res) => {
-    /**
-     * Status
-     * statusId -> generated automatically
-     * text
-     * userId
-     */
 
     if (!req.params.userId) {
         req.status(400).send('Malformed request. Please provide userId this status should be added to.');
@@ -195,3 +190,4 @@ router.delete(mapping,
 module.exports = {
     router
 };
+*/

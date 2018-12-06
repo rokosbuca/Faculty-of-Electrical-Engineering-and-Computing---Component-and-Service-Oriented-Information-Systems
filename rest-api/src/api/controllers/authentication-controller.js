@@ -27,9 +27,11 @@ router.get(mapping, (req, res) => {
 router.post(mapping, (req, res) => {
     if (!req.body.username) {
         res.status(400).send('Malformed request. Please provide username.');
+        return;
     }
     if (!req.body.password) {
         res.status(400).send('Malformed request. Please provide password.');
+        return;
     }
 
     const username = req.body.username;
@@ -40,6 +42,7 @@ router.post(mapping, (req, res) => {
     }, (err, user) => {
         if (err) {
             res.status(500).send('Unexpected error while fetching user.');
+            return;
         }
 
         // check if password is correct
@@ -50,6 +53,7 @@ router.post(mapping, (req, res) => {
         }, (err, salt) => {
             if (err) {
                 res.status(500).send(err);
+                return;
             }
 
             const hashedSentPassword = utils.createPassword(password, salt.salt);
@@ -57,6 +61,7 @@ router.post(mapping, (req, res) => {
                 // authentication failed
                 // do not provide token
                 res.status(401).send('Unathorized. Wrong password provided');
+                return;
             } else {
                 const payload = {
                     userId: user.userId,
@@ -68,6 +73,7 @@ router.post(mapping, (req, res) => {
                 });
 
                 res.json({ message: 'Authentication successful', token: token });
+                return;
             }
 
         });

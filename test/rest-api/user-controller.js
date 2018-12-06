@@ -23,6 +23,7 @@ const utils = require('../../rest-api/src/api/utils');
 // config chai library
 chai.use(chaiHttp);
 
+/*
 // router
 const router = require('express').Router();
 const mapping = '/users/:userId';
@@ -61,12 +62,6 @@ router.put(mapping,
     security.authenticationMiddleware,
     security.accessFrequencyLimiterMiddlewareByToken,
     (req, res) => {
-    /**
-     * User..
-     * username
-     * email
-     * password
-     */
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId.');
     }
@@ -139,3 +134,4 @@ router.delete(mapping,
 module.exports = {
     router
 };
+*/

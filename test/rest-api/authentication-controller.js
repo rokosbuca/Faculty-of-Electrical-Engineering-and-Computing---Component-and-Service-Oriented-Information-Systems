@@ -19,87 +19,108 @@ const Status = require('../../rest-api/database/models/status');
 
 // utils
 const utils = require('../../rest-api/src/api/utils');
+const jwt = require('jsonwebtoken');
+const config = require('../../rest-api/src/config');
 
 // config chai library
 chai.use(chaiHttp);
 
-// router
-const router = require('express').Router();
-const mapping = '/authenticate';
-
-// middlewares
-const security = require('../security');
-
-// schemas
-const User = require('../../../database/models/user');
-const Salt = require('../../../database/models/salt');
-
-// utils
-const utils = require('../utils');
-
-// authentication
-const jwt = require('jsonwebtoken');
-const config = require('../../config');
-
-router.get(mapping, (req, res) => {
-});
-
-router.post(mapping, (req, res) => {
-    if (!req.body.username) {
-        res.status(400).send('Malformed request. Please provide username.');
-    }
-    if (!req.body.password) {
-        res.status(400).send('Malformed request. Please provide password.');
-    }
-
-    const username = req.body.username;
-    const password = req.body.password;
-
-    User.findOne({
-        username: username
-    }, (err, user) => {
-        if (err) {
-            res.status(500).send('Unexpected error while fetching user.');
-        }
-
-        // check if password is correct
-        // for that, find user's salt to reproduce password
-        // from plain text password sent in the request
-        Salt.findOne({
-            saltId: user.saltId
-        }, (err, salt) => {
-            if (err) {
-                res.status(500).send(err);
-            }
-
-            const hashedSentPassword = utils.createPassword(password, salt.salt);
-            if (hashedSentPassword !== user.password) {
-                // authentication failed
-                // do not provide token
-                res.status(401).send('Unathorized. Wrong password provided');
-            } else {
-                const payload = {
-                    userId: user.userId,
-                    username: user.username,
-                    hashedPassword: user.password
-                }
-                const token = jwt.sign(payload, config.secret, {
-                    expiresIn: 1440
+describe('AUTHENTICATION CONTROLLER', () => {
+    beforeEach((done) => {
+        // before each test empty the database
+        User.remove({}, () => {
+            Salt.remove({}, () => {
+                Status.remove({}, () => {
+                    done();
                 });
+            });
+        });
+    });
+    /** test POST /api/authenticate */
+    describe('POST /api/authenticate', () => {
+        it ('it should fail when there is no username provided in req body', (done) => {
+            chai.request(server)
+                .post('/api/authenticate')
+                .end((err, res) => {
+                    res.should.have.status(400);
 
-                res.json({ message: 'Authentication successful', token: token });
-            }
+                    done();
+                });
+        });
+        it ('it should fail when there is no password provided in req body', (done) => {
+            chai.request(server)
+                .post('/api/authenticate')
+                .set('content-type', 'application/x-www-form-urlencoded')
+                .send({ username: 'xxx' })
+                .end((err, res) => {
+                    res.should.have.status(400);
 
+                    done();
+                });
+        });
+        it ('it should fail if the given username-password combination is wrong.', (done) => {
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.email = 'email';
+            user.password = 'password';
+            // create salt to salt the password before saving user
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            salt.save(() => {
+                user.saltId = salt.saltId;
+                user.password = utils.createPassword(user.password, salt.salt);
+                user.save(() => {
+                    // try to authenticate with the wrong password ('Password')
+                    chai.request(server)
+                        .post('/api/authenticate')
+                        .set('content-type', 'application/x-www-form-urlencoded')
+                        .send({ username: 'username', password: 'Password' })
+                        .end((err, res) => {
+                            res.should.have.status(401);
+        
+                            done();
+                        });
+                });
+            });
+        });
+        it ('it should create a predictable json web token for given username and password', (done) => {
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.email = 'email';
+            user.password = 'password';
+            // create salt to salt the password before saving user
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            salt.save(() => {
+                user.saltId = salt.saltId;
+                user.password = utils.createPassword(user.password, salt.salt);
+                user.save(() => {
+                    // try to authenticate with the wrong password ('Password')
+                    chai.request(server)
+                        .post('/api/authenticate')
+                        .set('content-type', 'application/x-www-form-urlencoded')
+                        .send({ username: 'username', password: 'password' })
+                        .end((err, res) => {
+                            res.should.have.status(200);
+                            res.body.token.should.be.a('string');
+                            const payload = {
+                                userId: user.userId,
+                                username: user.username,
+                                hashedPassword: user.password
+                            }
+                            const token = jwt.sign(payload, config.secret, {
+                                expiresIn: 1440
+                            });
+                            res.body.token.should.be.eql(token);
+
+                            done();
+                        });
+                });
+            });
         });
     });
 });
-
-router.put(mapping, (req, res) => {
-});
-
-router.delete(mapping, (req, res) => {
-});
-
-module.exports = {
-    router
-};
