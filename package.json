@@ -4,7 +4,8 @@
   "description": "Two Project, REST API and WebSocket, for the Component and Service Oriented Information Systems course held at the University of Zagreb, Faculty of Electrical Engineering and Computing.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon rest-api/src/server.js",
+    "test": "mocha test/api" 
   },
   "repository": {
     "type": "git",
