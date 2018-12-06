@@ -3,6 +3,26 @@
  * @author rsb
  */
 
+// database 
+const mongoose = require("mongoose");
+
+// testing libraries and more
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const server = require('../../rest-api/src/server');
+const should = chai.should();
+
+// models
+const User = require('../../rest-api/database/models/user');
+const Salt = require('../../rest-api/database/models/salt');
+const Status = require('../../rest-api/database/models/status');
+
+// utils
+const utils = require('../../rest-api/src/api/utils');
+
+// config chai library
+chai.use(chaiHttp);
+
 // router
 const router = require('express').Router();
 const mapping = '/statuses';
