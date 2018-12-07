@@ -17,27 +17,6 @@ const Status = require('../../../database/models/status');
 // utils
 const utils = require('../utils');
 
-router.post(mapping + '/rnd', (req, res) => {
-    const userId = req.body.userId;
-    const statusId = utils.randomId();
-    const text = utils.randomStatus();
-
-    const status = new Status();
-    status.statusId = statusId;
-    status.text = text;
-    status.userId = userId;
-    
-    status.save((err) => {
-        if (err) {
-            res.status(500).send(err);
-            return;
-        }
-
-        res.json({ message: 'Random status generated successfully.', status: status });
-        return;
-    });
-});
-
 router.get(mapping, (req, res) => {
     Status.find((err, statuses) => {
         if (err) {
