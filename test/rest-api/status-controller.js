@@ -68,6 +68,7 @@ describe('STATUS CONTROLLER', () => {
         });
     });
     /** test POST /api/statuses/:statusId */
+    /*
     describe('POST /api/statuses/:statusId', () => {
         it ('it should fail when no body is provided', (done) => {
             chai.request(server)
@@ -121,6 +122,7 @@ describe('STATUS CONTROLLER', () => {
             });
         });
     });
+    */
     /** test PUT /api/statuses/:statusId */
     describe('PUT /api/statuses/:statusId', () => {
         it ('it should fail when no body is provided', (done) => {
@@ -185,7 +187,7 @@ describe('STATUS CONTROLLER', () => {
     });
     /** test DELETE /api/statuses/:statusId */
     describe('DELETE /api/statuses/:statusId', () => {
-        it ('it shouldn\'t fail when no such status exists', (done) => {
+        it ('it should fail when attempt is made to delete the status that doesn\'t belong to userId encoded in json web token', (done) => {
             // create an user so json web token can be created
             const user = new User();
             user.userId = utils.randomId();
@@ -198,31 +200,34 @@ describe('STATUS CONTROLLER', () => {
             user.password = utils.createPassword(user.password, salt.salt);
             salt.save(() => {
                 user.save(() => {
-                    // delete status that doesn't exist
-                    const statusId = utils.randomId();
-                    const payload = {
-                        userId: user.userId,
-                        username: user.username,
-                        hashedPassword: user.password
-                    };
-                    const token = jwt.sign(payload, config.secret, {
-                        expiresIn: 1440
-                    });
-                    const deleteBody = {
-                        token: token,
-                        userId: user.userId
-                    };
-                    chai.request(server)
-                        .delete('/api/statuses/' + statusId)
-                        .send(deleteBody)
-                        .end((err, res) => {
-                            res.should.have.status(200);
-                            res.body.status.should.be.a('object');
-                            res.body.status.n.should.be.eql(0);
-                            res.body.status.ok.should.be.eql(1);
-        
-                            done();
+                    // save status that belongs to user with randomId
+                    const status = new Status();
+                    status.statusId = utils.randomId();
+                    status.userId = utils.randomId();
+                    status.text = utils.randomStatus()
+                    status.save(() => {
+                        // attempt to delete status that doesn't belong to userId encoded in json web token
+                        // create json web token for user
+                        const payload = {
+                            userId: user.userId,
+                            username: user.username,
+                            hashedPassword: user.password
+                        };
+                        const token = jwt.sign(payload, config.secret, {
+                            expiresIn: 1440
                         });
+                        const deleteBody = {
+                            token: token
+                        };
+                        chai.request(server)
+                            .delete('/api/statuses/' + status.statusId)
+                            .send(deleteBody)
+                            .end((err, res) => {
+                                res.should.have.status(401);
+            
+                                done();
+                        });
+                    });
                 });
             });
         });
@@ -240,6 +245,7 @@ describe('STATUS CONTROLLER', () => {
             salt.save(() => {
                 user.save(() => {
                     // create status so it can be deleted
+                    // status belongs to the user trying to delete it
                     const statusOld = new Status();
                     statusOld.statusId = utils.randomStatus();
                     statusOld.userId = user.userId;
