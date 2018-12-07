@@ -65,6 +65,37 @@ describe('USERS CONTROLLER', () => {
             });
         });
     });
+    /** test POST /api/users */
+    describe('POST /api/users', () => {
+        it ('it should fail when body is not provided', (done) => {
+            chai.request(server)
+                .post('/api/users')
+                .end((err, res) => {
+                    res.should.have.status(400);
+
+                    done();
+                });
+        });
+        it ('it should create a user when requested', (done) => {
+            const postBody = {
+                username: utils.randomString(5),
+                email: utils.randomEmail(),
+                password: utils.randomString(9)
+            }
+
+            chai.request(server)
+                .post('/api/users')
+                .send(postBody)
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.user.username.should.be.eql(postBody.username);
+                    res.body.user.email.should.be.eql(postBody.email);
+                    res.body.user.password.should.not.be.eql(postBody.password);
+
+                    done();
+                });
+        });
+    });
     /** test DELETE /api/users */
     describe('DELETE /api/users', () => {
         it ('it should delete the entire database of users', (done) => {
