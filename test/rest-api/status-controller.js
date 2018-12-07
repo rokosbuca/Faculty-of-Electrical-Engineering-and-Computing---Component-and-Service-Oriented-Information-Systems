@@ -121,4 +121,66 @@ describe('STATUS CONTROLLER', () => {
             });
         });
     });
+    /** test PUT /api/statuses/:statusId */
+    describe('PUT /api/statuses/:statusId', () => {
+        it ('it should fail when no body is provided', (done) => {
+            chai.request(server)
+                .put('/api/statuses/xxx')
+                .end((err, res) => {
+                    res.should.have.status(400);
+
+                    done();
+                });
+        });
+        it ('it should correctly replace current status\' data with new data', (done) => {
+            // create an user so json web token can be created
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.password = 'password';
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            user.saltId = salt.saltId;
+            user.password = utils.createPassword(user.password, salt.salt);
+            salt.save(() => {
+                user.save(() => {
+                    // create status so it can be replaced with new data
+                    const statusOld = new Status();
+                    statusOld.statusId = utils.randomStatus();
+                    statusOld.userId = user.userId;
+                    statusOld.text = 'old text';
+                    statusOld.save(() => {
+                        // replace statusOld with statusNew
+                        const statusId = statusOld.statusId;
+                        const payload = {
+                            userId: user.userId,
+                            username: user.username,
+                            hashedPassword: user.password
+                        };
+                        const token = jwt.sign(payload, config.secret, {
+                            expiresIn: 1440
+                        });
+                        const putBody = {
+                            token: token,
+                            userId: user.userId,
+                            text: 'new text'
+                        };
+                        chai.request(server)
+                            .put('/api/statuses/' + statusId)
+                            .send(putBody)
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                res.body.status.should.be.a('object');
+                                res.body.status.n.should.be.eql(1);
+                                res.body.status.nModified.should.be.eql(1);
+                                res.body.status.ok.should.be.eql(1);
+            
+                                done();
+                            });
+                    });
+                });
+            });
+        });
+    });
 });

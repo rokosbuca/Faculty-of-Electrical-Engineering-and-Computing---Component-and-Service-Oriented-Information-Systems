@@ -58,7 +58,7 @@ const accessFrequencyLimiterMiddlewareByIP = new RateLimit({
         prefix: 'rl:ip:'    // prefix on redis
     }),
 
-    max: 20, // limit each IP to 20 requests per windowMs - this amounts to 1200 requests per hour
+    max: 200, // limit each IP to 20 requests per windowMs - this amounts to 1200 requests per hour
     delayMs: 0, // disable delaying - full speed until the max limit is reached
     message: { success: false, message: 'You have exceeded a maximum of 20 api requests per minute from this IP address. Please try again later.' }, // message to be sent if the limit is exceeded. Keep in mind the "time to wait before retrying (Retry-After)" is embedded in the header by default.
     keyGenerator: (req) => req.ip
@@ -71,7 +71,7 @@ const accessFrequencyLimiterMiddlewareByToken = new RateLimit({
         prefix: 'rl:key:'    // prefix on redis
     }),
 
-    max: 20, // limit each dev api key to 20 requests per windowMs - this amounts to 1200 requests per hour
+    max: 200, // limit each dev api key to 20 requests per windowMs - this amounts to 1200 requests per hour
     delayMs: 0, // disable delaying - full speed until the max limit is reached
     message: { success: false, message: 'You have exceeded a maximum of 20 api requests per minute with this developer api key. Please try again later.' }, // message to be sent if the limit is exceeded. Keep in mind the "time to wait before retrying (Retry-After)" is embedded in the header by default.
     keyGenerator: (req) => req.body.key

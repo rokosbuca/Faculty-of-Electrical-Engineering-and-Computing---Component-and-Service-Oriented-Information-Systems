@@ -107,15 +107,21 @@ router.post(mapping,
     });
 });
 
-router.put(mapping, (req, res) => {
+router.put(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     if (!req.params.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
+        return;
     }
     if (!req.body.userId) {
         req.status(400).send('Malformed request. Please provide userId this status should be added to.');
+        return;
     }
     if (!req.body.text) {
         req.status(400).send('Malformed request. Please provide text for this status.');
+        return;
     }
 
     const statusId = String(req.params.statusId);
@@ -126,18 +132,24 @@ router.put(mapping, (req, res) => {
         statusId: statusId
         }, {
             text: text,
-        }, (err, user) => {
+        }, (err, status) => {
             if (err) {
                 res.status(500).send('Unexpected server error while updating status text.');
+                return;
             }
 
-            res.json({ message: 'Status successfully updated.', user: user });
+            res.json({ message: 'Status successfully updated.', status: status });
+            return;
     });
 });
 
-router.delete(mapping, (req, res) => {
+router.delete(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     if (!req.params.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
+        return;
     }
 
     const statusId = String(req.params.statusId);
@@ -147,9 +159,11 @@ router.delete(mapping, (req, res) => {
     }, function(err, status) {
         if (err) {
             res.status(500).send(err);
+            return;
         }
 
         res.json({ message: 'Successfully deleted', status: status });
+        return;
     });
 });
 
