@@ -183,4 +183,96 @@ describe('STATUS CONTROLLER', () => {
             });
         });
     });
+    /** test DELETE /api/statuses/:statusId */
+    describe('DELETE /api/statuses/:statusId', () => {
+        it ('it shouldn\'t fail when no such status exists', (done) => {
+            // create an user so json web token can be created
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.password = 'password';
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            user.saltId = salt.saltId;
+            user.password = utils.createPassword(user.password, salt.salt);
+            salt.save(() => {
+                user.save(() => {
+                    // delete status that doesn't exist
+                    const statusId = utils.randomId();
+                    const payload = {
+                        userId: user.userId,
+                        username: user.username,
+                        hashedPassword: user.password
+                    };
+                    const token = jwt.sign(payload, config.secret, {
+                        expiresIn: 1440
+                    });
+                    const deleteBody = {
+                        token: token,
+                        userId: user.userId
+                    };
+                    chai.request(server)
+                        .delete('/api/statuses/' + statusId)
+                        .send(deleteBody)
+                        .end((err, res) => {
+                            res.should.have.status(200);
+                            res.body.status.should.be.a('object');
+                            res.body.status.n.should.be.eql(0);
+                            res.body.status.ok.should.be.eql(1);
+        
+                            done();
+                        });
+                });
+            });
+        });
+        it ('it should correctly delete the status defined by :statusId', (done) => {
+            // create an user so json web token can be created
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.password = 'password';
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            user.saltId = salt.saltId;
+            user.password = utils.createPassword(user.password, salt.salt);
+            salt.save(() => {
+                user.save(() => {
+                    // create status so it can be deleted
+                    const statusOld = new Status();
+                    statusOld.statusId = utils.randomStatus();
+                    statusOld.userId = user.userId;
+                    statusOld.text = 'old text';
+                    statusOld.save(() => {
+                        // delete statusOld
+                        const statusId = statusOld.statusId;
+                        const payload = {
+                            userId: user.userId,
+                            username: user.username,
+                            hashedPassword: user.password
+                        };
+                        const token = jwt.sign(payload, config.secret, {
+                            expiresIn: 1440
+                        });
+                        const deleteBody = {
+                            token: token,
+                            userId: user.userId
+                        };
+                        chai.request(server)
+                            .delete('/api/statuses/' + statusId)
+                            .send(deleteBody)
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                res.body.status.should.be.a('object');
+                                res.body.status.n.should.be.eql(1);
+                                res.body.status.ok.should.be.eql(1);
+            
+                                done();
+                            });
+                    });
+                });
+            });
+        });
+    });
 });
