@@ -30,7 +30,7 @@ router.get(mapping, (req, res) => {
 });
 
 router.delete(mapping, (req, res) => {
-    User.remove({}, (err, statuses) => {
+    Status.remove({}, (err, statuses) => {
         if (err) {
             res.status(500).send('Unexpected error while deleting all statuses from all users.');
             return;

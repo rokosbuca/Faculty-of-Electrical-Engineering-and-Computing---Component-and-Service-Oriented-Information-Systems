@@ -88,7 +88,7 @@ describe('STATUSES CONTROLLER', () => {
                             .end((err, res) => {
                                 res.should.have.status(200);
                                 res.body.statuses.should.be.a('object');
-                                res.body.statuses.n.should.be.eql(0);
+                                res.body.statuses.n.should.be.eql(3);
                                 res.body.statuses.ok.should.be.eql(1);
 
                                 done();
