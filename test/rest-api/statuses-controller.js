@@ -19,157 +19,83 @@ const Status = require('../../rest-api/database/models/status');
 
 // utils
 const utils = require('../../rest-api/src/api/utils');
+const jwt = require('jsonwebtoken');
+const config = require('../../rest-api/src/config');
 
 // config chai library
 chai.use(chaiHttp);
 
-/*
-// router
-const router = require('express').Router();
-const mapping = '/statuses';
-
-// middlewares
-const security = require('../security');
-
-// schemas
-const User = require('../../../database/models/user');
-const Status = require('../../../database/models/status');
-
-// utils
-const utils = require('../utils');
-
-router.post(mapping + '/rnd', (req, res) => {
-    const userId = req.body.userId;
-    const statusId = utils.randomId();
-    const text = utils.randomStatus();
-
-    const status = new Status();
-    status.statusId = statusId;
-    status.text = text;
-    status.userId = userId;
-    
-    status.save((err) => {
-        if (err) {
-            res.status(500).send(err);
-        }
-
-        res.json({ message: 'Random status generated successfully.', status: status });
+describe('STATUSES CONTROLLER', () => {
+    beforeEach((done) => {
+        // before each test empty the database
+        User.remove({}, () => {
+            Salt.remove({}, () => {
+                Status.remove({}, () => {
+                    done();
+                });
+            });
+        });
     });
-});
+    /** test GET /api/statuses */
+    describe('GET /api/statuses', () => {
+        it ('it shouldn\'t fail when the database is empty', (done) => {
+            chai.request(server)
+                .get('/api/statuses')
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.statuses.length.should.be.eql(0);
 
-router.get(mapping, (req, res) => {
-    Status.find((err, statuses) => {
-        if (err) {
-            res.status(500).send('Unexpected error occured while fetching statuses.');
-        }
+                    done();
+                });
+        });
+        it ('it should return all statuses', (done) => {
+            new Status().save(() => {
+                new Status().save(() => {
+                    new Status().save(() => {
+                        chai.request(server)
+                            .get('/api/statuses')
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                res.body.statuses.length.should.be.eql(3);
 
-        res.json({ statuses: statuses });
+                                done();
+                            });
+                    });
+                });
+            });
+        });
     });
-});
+    /** test DELETE /api/statuses */
+    describe('DELETE /api/statuses', () => {
+        it ('it should delete the entire database of statuses', (done) => {
+            const s1 = new Status();
+            s1.statusId = utils.randomId();
+            s1.userId = utils.randomId();
+            s1.text = utils.randomStatus();
+            s1.save(() => {
+                const s2 = new Status();
+                s2.statusId = utils.randomId();
+                s2.userId = utils.randomId();
+                s2.text = utils.randomStatus();
+                s2.save(() => {
+                    const s3 = new Status();
+                    s1.statusId = utils.randomId();
+                    s3.userId = utils.randomId();
+                    s3.text = utils.randomStatus();
+                    s3.save(() => {
+                        chai.request(server)
+                            .delete('/api/statuses')
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                res.body.statuses.should.be.a('object');
+                                res.body.statuses.n.should.be.eql(0);
+                                res.body.statuses.ok.should.be.eql(1);
 
-router.post(mapping,
-    security.authenticationMiddleware,
-    security.accessFrequencyLimiterMiddlewareByToken,
-    (req, res) => {
-
-    if (!req.body.userId) {
-        req.status(400).send('Malformed request. Please provide userId this status should be added to.');
-    }
-    if (!req.body.text) {
-        req.status(400).send('Malformed request. Please provide text for this status.');
-    }
-
-    const statusId = utils.randomId();
-    const userId = String(req.body.userId);
-    const text = String(req.body.text);
-
-    // first find if user with given userId exists
-    User.find((err, users) => {
-        if (err) {
-            res.status(500).send('Unexpected error while checking if the userId given is valid.');
-        }
-
-        let userFound = false;
-        let ui = -1;
-        for (let i in users) {
-            if (users[i].userId === userId) {
-                userFound = true;
-                ui = i;
-            }
-        }
-
-        if (!userFound) {
-            res.status(400).send('Please provide existing userId.');
-        }
-
-        const status = new Status();
-        status.statusId = statusId;
-        status.text = text;
-        status.userId = userId;
-
-        status.save((err) => {
-            if (err) {
-                res.status(500).send('Unexpected error while saving new status.');
-            }
-
-            res.json({ message: 'Status saved successfully.', status: status });
+                                done();
+                            });
+                    });
+                });
+            });
         });
     });
 });
-
-router.put(mapping,
-    security.authenticationMiddleware,
-    security.accessFrequencyLimiterMiddlewareByToken,
-    (req, res) => {
-    if (!req.body.statusId) {
-        req.status(400).send('Malformed request. Please provide statusId');
-    }
-    if (!req.body.userId) {
-        req.status(400).send('Malformed request. Please provide userId this status should be added to.');
-    }
-    if (!req.body.text) {
-        req.status(400).send('Malformed request. Please provide text for this status.');
-    }
-
-    const statusId = String(req.body.statusId);
-    const userId = String(req.body.userId);
-    const text = String(req.body.text);
-
-    Status.update({
-        statusId: statusId
-        }, {
-            text: text,
-        }, (err, user) => {
-            if (err) {
-                res.status(500).send('Unexpected server error while updating status text.');
-            }
-
-            res.json({ message: 'Status successfully updated.', user: user });
-    });
-});
-
-router.delete(mapping,
-    security.authenticationMiddleware,
-    security.accessFrequencyLimiterMiddlewareByToken,
-    (req, res) => {
-    if (!req.body.statusId) {
-        req.status(400).send('Malformed request. Please provide statusId');
-    }
-
-    const statusId = String(req.body.statusId);
-
-    Status.remove({
-        statusId: statusId
-    }, function(err, status) {
-        if (err) {
-            res.status(500).send(err);
-        }
-
-        res.json({ message: 'Successfully deleted', status: status });
-    });
-});
-
-module.exports = {
-    router
-};
-*/
