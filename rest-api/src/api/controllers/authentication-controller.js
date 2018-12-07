@@ -21,9 +21,6 @@ const utils = require('../utils');
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
 
-router.get(mapping, (req, res) => {
-});
-
 router.post(mapping, (req, res) => {
     if (!req.body.username) {
         res.status(400).send('Malformed request. Please provide username.');
@@ -78,12 +75,6 @@ router.post(mapping, (req, res) => {
 
         });
     });
-});
-
-router.put(mapping, (req, res) => {
-});
-
-router.delete(mapping, (req, res) => {
 });
 
 module.exports = {

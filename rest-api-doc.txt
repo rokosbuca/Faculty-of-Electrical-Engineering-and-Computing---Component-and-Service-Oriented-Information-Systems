@@ -1,0 +1,37 @@
+/api/authenticate
+    POST (username, password) => token : creates and signs json web token with encoded username, hashed password and userId
+
+/api/users
+    GET () => users : fetches all users from database and returns them. FOR TESTING PURPOSES ONLY, is not to be exposed in production builds
+    POST (username, email, password) => user : creates new user with given database
+    DELETE () => void : deletes all users from the database
+
+/api/users/:userId
+    GET () => user : fetches all user info based on :userId
+    *PUT (username, email, password) => user : overwrites all user data with recieved data
+    *DELETE () => void : deletes the user. this action cannot be undone
+
+/api/users/:userId/statuses
+    GET () => statuses : fetches all statuses that belong to :userId
+    *POST (text) => status : creates a new status that belongs to :userId
+    *PUT (statusId, text) => : overwrites status' text with the recieved one. status is defined by statusId and belongs to :userId
+    *DELETE (statusId) => void : deletes the status defined by statusId that belongs to :userId
+
+/api/statuses
+    GET () => statuses : fetches all statuses in the database
+    DELETE () => void : deletes all statuses in the database
+
+/api/:statusId
+    GET () => status : fetches the status defined by :statusId. Must belong to the user making the request.
+    *POST (userId, text) => status : creates a new status and binds it to userId
+    *PUT (userId, text) => status : changes the text or the owner (or both) of the status defined by :statusId
+    *DELETE () => void : deletes the status. this action can only be invoked by the owner of the status
+
+
+/p/:a/t/h - defines the URI exposed by the REST method
+GET, POST, PUT, DELETE - defines the http method
+( and ) - define arguments that have to be passed when invoking the REST method. all arguments are required. methods with empty braces can still use the :variable. all arguments except for the :variables have to be passed in the body with the name being the same as specified in the braces.
+=> return value - defines the result of invoking the REST method. names should hopefully be self explanatory
+* - the star sign defines methods that require authentication via the json web token. providing the token is enough for all of the specified methods.
+
+every REST method has a test in root/test/rest-api. there are 31 tests, all 31 pass in about .4 seconds.

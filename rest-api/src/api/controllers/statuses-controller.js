@@ -24,7 +24,7 @@ router.get(mapping, (req, res) => {
             return;
         }
 
-        res.json({ message: 'FOR TESTING PURPOSES ONLY', statuses: statuses });
+        res.json({ statuses: statuses });
         return;
     });
 });
