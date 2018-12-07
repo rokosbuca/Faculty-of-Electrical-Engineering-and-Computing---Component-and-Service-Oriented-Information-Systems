@@ -23,6 +23,7 @@ const decodeApiKey = (apiKey) => {
     return null;
 };
 
+const Status = require('../../database/models/status');
 const authenticationMiddleware = (req, res, next) => {
     console.log('accessing security.authenticationMiddleware middleware');
 
@@ -35,13 +36,37 @@ const authenticationMiddleware = (req, res, next) => {
 
     jwt.verify(token, config.secret, (err, decodedToken) => {
         if (err) {
-            res.status(401).send('Unaothrized. Token authentication failed.');
+            res.status(401).send('Unauthorized. Token authentication failed.');
             return;
         }
 
         // save token to req for later use
         req.decodedToken = decodedToken;
-        next();
+
+        // for /api/users/:userId and /api/users/:userId/statuses
+        // check if the given userId is the same one that is
+        // encoded in json web token
+        if (req.params.userId) {
+            if (decodedToken.userId !== req.params.userId) {
+                res.status(401).send('Unauthorized. Token authentication failed.');
+                return;
+            }
+        }
+
+        // for /api/statuses/:statusId check if statusId belongs to
+        // userId encoded in json web token
+        if (req.params.statusId) {
+            Status.findOne({ statusId: req.params.statusId }, (err, status) => {
+                if (decodedToken.userId !== status.userId) {
+                    res.status(401).send('Unauthorized. Token authentication failed.');
+                    return;
+                } else {
+                    next();
+                }
+            })
+        } else {
+            next();
+        }
     });
 };
 

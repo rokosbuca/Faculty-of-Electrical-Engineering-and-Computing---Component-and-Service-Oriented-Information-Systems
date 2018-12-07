@@ -75,10 +75,10 @@ router.post(mapping,
      */
 
     if (!req.params.userId) {
-        req.status(400).send('Malformed request. Please provide userId this status should be added to.');
+        res.status(400).send('Malformed request. Please provide userId this status should be added to.');
     }
     if (!req.body.text) {
-        req.status(400).send('Malformed request. Please provide text for this status.');
+        res.status(400).send('Malformed request. Please provide text for this status.');
     }
 
     const statusId = utils.randomId();

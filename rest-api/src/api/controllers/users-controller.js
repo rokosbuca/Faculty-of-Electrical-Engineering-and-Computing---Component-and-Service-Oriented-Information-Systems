@@ -115,6 +115,12 @@ router.put(mapping, (req, res) => {
 });
 
 router.delete(mapping, (req, res) => {
+    User.remove({}, () => {
+        res.json({ message: 'deleted all users' });
+        return;
+    });
+    return;
+
     const userId = req.body.userId;
     if (!userId) {
         res.status(400).send('Malformed request. Please provide userId.');
