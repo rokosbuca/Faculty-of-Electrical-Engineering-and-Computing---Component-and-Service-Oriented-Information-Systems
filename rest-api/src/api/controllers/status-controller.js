@@ -41,22 +41,28 @@ router.get(mapping, (req, res) => {
     });
 });
 
-router.post(mapping, (req, res) => {
+router.post(mapping,
+    security.authenticationMiddleware,
+    security.accessFrequencyLimiterMiddlewareByToken,
+    (req, res) => {
     /**
-     * Status
+     * Status...
      * statusId
      * text
      * userId
      */
 
-    if (!req.body.statusId) {
+    if (!req.params.statusId) {
         req.status(400).send('Malformed request. Please provide statusId.');
+        return;
     }
     if (!req.body.userId) {
         req.status(400).send('Malformed request. Please provide userId this status should be added to.');
+        return;
     }
     if (!req.body.text) {
         req.status(400).send('Malformed request. Please provide text for this status.');
+        return;
     }
 
     const statusId = req.params.statusId;
@@ -67,6 +73,7 @@ router.post(mapping, (req, res) => {
     User.find((err, users) => {
         if (err) {
             res.status(500).send('Unexpected error while checking if the userId given is valid.');
+            return;
         }
 
         let userFound = false;
@@ -80,6 +87,7 @@ router.post(mapping, (req, res) => {
 
         if (!userFound) {
             res.status(400).send('Please provide existing userId.');
+            return;
         }
 
         const status = new Status();
@@ -90,9 +98,11 @@ router.post(mapping, (req, res) => {
         status.save((err) => {
             if (err) {
                 res.status(500).send('Unexpected error while saving new status.');
+                return;
             }
 
             res.json({ message: 'Status saved successfully.', status: status });
+            return;
         });
     });
 });

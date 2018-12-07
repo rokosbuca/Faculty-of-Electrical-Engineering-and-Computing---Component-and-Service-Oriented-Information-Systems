@@ -67,4 +67,58 @@ describe('STATUS CONTROLLER', () => {
             });
         });
     });
+    /** test POST /api/statuses/:statusId */
+    describe('POST /api/statuses/:statusId', () => {
+        it ('it should fail when no body is provided', (done) => {
+            chai.request(server)
+                .post('/api/statuses/xxx')
+                .end((err, res) => {
+                    res.should.have.status(400);
+
+                    done();
+                });
+        });
+        it ('it should create a status with an user-given statusId', (done) => {
+            // create an user so json web token can be created
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.password = 'password';
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            user.saltId = salt.saltId;
+            user.password = utils.createPassword(user.password, salt.salt);
+            salt.save(() => {
+                user.save(() => {
+                    const statusId = utils.randomId();
+                    const payload = {
+                        userId: user.userId,
+                        username: user.username,
+                        hashedPassword: user.password
+                    }
+                    const token = jwt.sign(payload, config.secret, {
+                        expiresIn: 1440
+                    });
+                    const postBody = {
+                        token: token,
+                        userId: user.userId,
+                        text: utils.randomStatus()
+                    };
+                    chai.request(server)
+                        .post('/api/statuses/' + statusId)
+                        .send(postBody)
+                        .end((err, res) => {
+                            res.should.have.status(200);
+                            res.body.status.text.should.be.a('string');
+                            res.body.status.statusId.should.be.eql(statusId);
+                            res.body.status.text.should.be.eql(postBody.text);
+                            res.body.status.userId.should.be.eql(postBody.userId);
+        
+                            done();
+                        });
+                });
+            });
+        });
+    });
 });

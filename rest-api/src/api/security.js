@@ -28,6 +28,7 @@ const authenticationMiddleware = (req, res, next) => {
 
     if (!req.body.token) {
         res.status(400).send('Malformed request. Please provide token with this request and try again.');
+        return;
     }
 
     const token = req.body.token;
@@ -35,6 +36,7 @@ const authenticationMiddleware = (req, res, next) => {
     jwt.verify(token, config.secret, (err, decodedToken) => {
         if (err) {
             res.status(401).send('Unaothrized. Token authentication failed.');
+            return;
         }
 
         // save token to req for later use
