@@ -17,12 +17,10 @@ const Salt = require('../../../database/models/salt');
 // utils
 const utils = require('../utils');
 
-router.get(mapping,
-    security.authenticationMiddleware,
-    security.accessFrequencyLimiterMiddlewareByToken,
-    (req, res) => {
+router.get(mapping, (req, res) => {
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId.');
+        return;
     }
 
     const userId = req.params.userId;
@@ -30,6 +28,12 @@ router.get(mapping,
     User.findOne({ userId: userId }, (err, user) => {
         if (err) {
             res.status(500).send('Error while fetching user');
+            return;
+        }
+
+        if (!user) {
+            res.status(404).send('No such user exists.');
+            return;
         }
 
         res.json({ user: user });

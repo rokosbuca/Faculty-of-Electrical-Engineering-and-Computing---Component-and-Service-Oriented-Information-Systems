@@ -39,34 +39,112 @@ describe('USER CONTROLLER', () => {
     /** test GET /api/users/:userId */
     describe('GET /api/users/:userId', () => {
         it ('it should fail when the provided :userId doesn\'t exist in the database', (done) => {
+            /*
+            const user = new User();
+            user.userId = req.params.userId
+            user.username = 'username';
+            user.email = utils.randomEmail();
+            user.password = utils.createPassword('password', utils.randomSalt());
+            user.saltId = utils.randomId();
+            // generate json web token
+            const payload = {
+                userId: user.userId,
+                username: user.username,
+                hashedPassword: user.password
+            };
+            const token = jwt.sign(payload, config.secret, {
+                expiresIn: 1440
+            });
+            const getBody = {
+                token: token
+            };*/
             chai.request(server)
                 .get('/api/users/xxx')
                 .end((err, res) => {
-                    res.should.have.status(400);
+                    res.should.have.status(404);
 
                     done();
                 });
         });
-        it ('it should return the correct users\' data', (done) => {
-            const status = new Status();
-            status.statusId = utils.randomId();
-            status.text = utils.randomStatus();
-            status.userId = utils.randomId();
-            status.save(() => {
+        it ('it should return the correct user\'s data', (done) => {
+            const user = new User();
+            user.userId = utils.randomId()
+            user.username = 'username';
+            user.email = utils.randomEmail();
+            user.password = utils.createPassword('password', utils.randomSalt());
+            user.saltId = utils.randomId();
+            user.save(() => {
                 chai.request(server)
-                    .get('/api/statuses/' + status.statusId)
+                    .get('/api/users/' + user.userId)
                     .end((err, res) => {
                         res.should.have.status(200);
-                        res.body.status.text.should.be.a('string');
-                        res.body.status.statusId.should.be.eql(status.statusId);
-                        res.body.status.text.should.be.eql(status.text);
-                        res.body.status.userId.should.be.eql(status.userId);
+                        res.body.user.userId.should.be.eql(user.userId);
+                        res.body.user.username.should.be.eql(user.username);
+                        res.body.user.email.should.be.eql(user.email);
+                        res.body.user.password.should.be.eql(user.password);
+                        res.body.user.saltId.should.be.eql(user.saltId);
 
                         done();
                     });
             });
         });
     });
+    /** test POST /api/statuses/:statusId */
+    /*
+    describe('POST /api/statuses/:statusId', () => {
+        it ('it should fail when no body is provided', (done) => {
+            chai.request(server)
+                .post('/api/statuses/xxx')
+                .end((err, res) => {
+                    res.should.have.status(400);
+
+                    done();
+                });
+        });
+        it ('it should create a status with an user-given statusId', (done) => {
+            // create an user so json web token can be created
+            const user = new User();
+            user.userId = utils.randomId();
+            user.username = 'username';
+            user.password = 'password';
+            const salt = new Salt();
+            salt.saltId = utils.randomId();
+            salt.salt = utils.randomSalt();
+            user.saltId = salt.saltId;
+            user.password = utils.createPassword(user.password, salt.salt);
+            salt.save(() => {
+                user.save(() => {
+                    const statusId = utils.randomId();
+                    const payload = {
+                        userId: user.userId,
+                        username: user.username,
+                        hashedPassword: user.password
+                    }
+                    const token = jwt.sign(payload, config.secret, {
+                        expiresIn: 1440
+                    });
+                    const postBody = {
+                        token: token,
+                        userId: user.userId,
+                        text: utils.randomStatus()
+                    };
+                    chai.request(server)
+                        .post('/api/statuses/' + statusId)
+                        .send(postBody)
+                        .end((err, res) => {
+                            res.should.have.status(200);
+                            res.body.status.text.should.be.a('string');
+                            res.body.status.statusId.should.be.eql(statusId);
+                            res.body.status.text.should.be.eql(postBody.text);
+                            res.body.status.userId.should.be.eql(postBody.userId);
+        
+                            done();
+                        });
+                });
+            });
+        });
+    });
+    */
     /** test PUT /api/users/:userId */
     describe('PUT /api/users/:userId', () => {
         it ('it should fail when no body is provided', (done) => {
@@ -78,7 +156,7 @@ describe('USER CONTROLLER', () => {
                     done();
                 });
         });
-        it ('it should correctly replace current users\' data with new data', (done) => {
+        it ('it should correctly replace current user\'s data with new data', (done) => {
             // create an user so json web token can be created
             const user = new User();
             user.userId = utils.randomId();
@@ -98,6 +176,7 @@ describe('USER CONTROLLER', () => {
                     statusOld.text = 'old text';
                     statusOld.save(() => {
                         // replace statusOld with statusNew
+                        // replace old data with new data
                         const statusId = statusOld.statusId;
                         const payload = {
                             userId: user.userId,
@@ -109,18 +188,19 @@ describe('USER CONTROLLER', () => {
                         });
                         const putBody = {
                             token: token,
-                            userId: user.userId,
-                            text: 'new text'
+                            username: utils.randomString(5),
+                            email: utils.randomEmail(),
+                            password: utils.randomString(6)
                         };
                         chai.request(server)
-                            .put('/api/statuses/' + statusId)
+                            .put('/api/users/' + user.userId)
                             .send(putBody)
                             .end((err, res) => {
                                 res.should.have.status(200);
-                                res.body.status.should.be.a('object');
-                                res.body.status.n.should.be.eql(1);
-                                res.body.status.nModified.should.be.eql(1);
-                                res.body.status.ok.should.be.eql(1);
+                                res.body.user.should.be.a('object');
+                                res.body.user.n.should.be.eql(1);
+                                res.body.user.nModified.should.be.eql(1);
+                                res.body.user.ok.should.be.eql(1);
             
                                 done();
                             });
@@ -131,7 +211,7 @@ describe('USER CONTROLLER', () => {
     });
     /** test DELETE /api/users/:userId */
     describe('DELETE /api/users/:userId', () => {
-        it ('it should fail when you try to delete another user', (done) => {
+        it ('it should fail when attempt is made to delete the user that doesn\'t belong to userId encoded in json web token', (done) => {
             // create an user so json web token can be created
             const user = new User();
             user.userId = utils.randomId();
@@ -144,31 +224,34 @@ describe('USER CONTROLLER', () => {
             user.password = utils.createPassword(user.password, salt.salt);
             salt.save(() => {
                 user.save(() => {
-                    // delete status that doesn't exist
-                    const statusId = utils.randomId();
-                    const payload = {
-                        userId: user.userId,
-                        username: user.username,
-                        hashedPassword: user.password
-                    };
-                    const token = jwt.sign(payload, config.secret, {
-                        expiresIn: 1440
-                    });
-                    const deleteBody = {
-                        token: token,
-                        userId: user.userId
-                    };
-                    chai.request(server)
-                        .delete('/api/statuses/' + statusId)
-                        .send(deleteBody)
-                        .end((err, res) => {
-                            res.should.have.status(200);
-                            res.body.status.should.be.a('object');
-                            res.body.status.n.should.be.eql(0);
-                            res.body.status.ok.should.be.eql(1);
-        
-                            done();
+                    // save status that belongs to user with randomId
+                    const status = new Status();
+                    status.statusId = utils.randomId();
+                    status.userId = utils.randomId();
+                    status.text = utils.randomStatus()
+                    status.save(() => {
+                        // attempt to delete status that doesn't belong to userId encoded in json web token
+                        // create json web token for user
+                        const payload = {
+                            userId: user.userId,
+                            username: user.username,
+                            hashedPassword: user.password
+                        };
+                        const token = jwt.sign(payload, config.secret, {
+                            expiresIn: 1440
                         });
+                        const deleteBody = {
+                            token: token
+                        };
+                        chai.request(server)
+                            .delete('/api/users/' + utils.randomId())
+                            .send(deleteBody)
+                            .end((err, res) => {
+                                res.should.have.status(401);
+            
+                                done();
+                        });
+                    });
                 });
             });
         });
@@ -186,6 +269,7 @@ describe('USER CONTROLLER', () => {
             salt.save(() => {
                 user.save(() => {
                     // create status so it can be deleted
+                    // status belongs to the user trying to delete it
                     const statusOld = new Status();
                     statusOld.statusId = utils.randomStatus();
                     statusOld.userId = user.userId;
@@ -206,13 +290,13 @@ describe('USER CONTROLLER', () => {
                             userId: user.userId
                         };
                         chai.request(server)
-                            .delete('/api/statuses/' + statusId)
+                            .delete('/api/users/' + user.userId)
                             .send(deleteBody)
                             .end((err, res) => {
                                 res.should.have.status(200);
-                                res.body.status.should.be.a('object');
-                                res.body.status.n.should.be.eql(1);
-                                res.body.status.ok.should.be.eql(1);
+                                res.body.user.should.be.a('object');
+                                res.body.user.n.should.be.eql(1);
+                                res.body.user.ok.should.be.eql(1);
             
                                 done();
                             });
