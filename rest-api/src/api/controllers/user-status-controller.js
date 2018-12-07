@@ -20,6 +20,7 @@ const utils = require('../utils');
 router.post(mapping + '/rnd', (req, res) => {
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId');
+        return;
     }
 
     const userId = req.params.userId;
@@ -34,15 +35,18 @@ router.post(mapping + '/rnd', (req, res) => {
     status.save((err) => {
         if (err) {
             res.status(500).send(err);
+            return;
         }
 
         res.json({ message: 'Random status generated successfully.', status: status });
+        return;
     });
 });
 
 router.get(mapping, (req, res) => {
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId');
+        return;
     }
 
     const userId = req.params.userId;
@@ -50,6 +54,7 @@ router.get(mapping, (req, res) => {
     Status.find((err, statuses) => {
         if (err) {
             res.status(500).send('Unexpected error occured while fetching statuses.');
+            return;
         }
 
         const userStatuses = [];
@@ -60,6 +65,7 @@ router.get(mapping, (req, res) => {
         }
 
         res.json({ statuses: userStatuses });
+        return;
     });
 });
 
@@ -76,9 +82,11 @@ router.post(mapping,
 
     if (!req.params.userId) {
         res.status(400).send('Malformed request. Please provide userId this status should be added to.');
+        return;
     }
     if (!req.body.text) {
         res.status(400).send('Malformed request. Please provide text for this status.');
+        return;
     }
 
     const statusId = utils.randomId();
@@ -89,6 +97,7 @@ router.post(mapping,
     User.find((err, users) => {
         if (err) {
             res.status(500).send('Unexpected error while checking if the userId given is valid.');
+            return;
         }
 
         let userFound = false;
@@ -102,6 +111,7 @@ router.post(mapping,
 
         if (!userFound) {
             res.status(400).send('Please provide existing userId.');
+            return;
         }
 
         const status = new Status();
@@ -112,9 +122,11 @@ router.post(mapping,
         status.save((err) => {
             if (err) {
                 res.status(500).send('Unexpected error while saving new status.');
+                return;
             }
 
             res.json({ message: 'Status saved successfully.', status: status });
+            return;
         });
     });
 });
@@ -125,12 +137,15 @@ router.put(mapping,
     (req, res) => {
     if (!req.body.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
+        return;
     }
     if (!req.params.userId) {
         req.status(400).send('Malformed request. Please provide userId this status should be added to.');
+        return;
     }
     if (!req.body.text) {
         req.status(400).send('Malformed request. Please provide text for this status.');
+        return;
     }
 
     const statusId = String(req.body.statusId);
@@ -141,12 +156,14 @@ router.put(mapping,
         statusId: statusId
         }, {
             text: text,
-        }, (err, user) => {
+        }, (err, status) => {
             if (err) {
                 res.status(500).send('Unexpected server error while updating status text.');
+                return;
             }
 
-            res.json({ message: 'Status successfully updated.', user: user });
+            res.json({ message: 'Status successfully updated.', status: status });
+            return;
         }
     );
 });
@@ -157,6 +174,7 @@ router.delete(mapping,
     (req, res) => {
     if (!req.body.statusId) {
         req.status(400).send('Malformed request. Please provide statusId');
+        return;
     }
 
     const statusId = String(req.body.statusId);
@@ -166,9 +184,11 @@ router.delete(mapping,
     }, function(err, status) {
         if (err) {
             res.status(500).send(err);
+            return;
         }
 
         res.json({ message: 'Successfully deleted', status: status });
+        return;
     });
 });
 

@@ -55,8 +55,11 @@ const authenticationMiddleware = (req, res, next) => {
 
         // for /api/statuses/:statusId check if statusId belongs to
         // userId encoded in json web token
-        if (req.params.statusId) {
-            Status.findOne({ statusId: req.params.statusId }, (err, status) => {
+        if (req.params.statusId || req.body.statusId) {
+            let statusId;
+            if (req.params.statusId) statusId = req.params.statusId;
+            if (req.body.statusId) statusId = req.body.statusId;
+            Status.findOne({ statusId: statusId }, (err, status) => {
                 if (decodedToken.userId !== status.userId) {
                     res.status(401).send('Unauthorized. Token authentication failed.');
                     return;
